@@ -24,6 +24,27 @@ using nlohmann::json;
     #include <windows.h> // for GetACP()
 #endif
 
+template<class T>
+struct FooBar {
+    explicit FooBar(T& value): value(value) {}
+    std::reference_wrapper<T> value;
+
+    FooBar& operator=(T value) {
+        this->value.get() = value;
+        return *this;
+    }
+};
+
+template<class T>
+struct nlohmann::adl_serializer<FooBar<T>>
+{
+    template<class BasicJsonType>
+    static void from_json(const BasicJsonType& j, FooBar<T> value)
+    {
+        value = j.template get<T>();
+    }
+};
+
 namespace
 {
 struct SaxEventLogger : public nlohmann::json_sax<json>
@@ -1176,6 +1197,17 @@ TEST_CASE("deserialization")
         CHECK(j3["num"] == 42);
     }
 #endif
+
+    SECTION("get_to") {
+        const json j(42);
+        int value = 0;
+        j.get_to(FooBar<int>(value));
+        FooBar<int> f(value);
+        CHECK(value == 42);
+        value = 0;
+        FooBar<int>& g = j.get_to(f);
+        CHECK(value == 42);
+    }
 }
 
 // select the types to test - char8_t is only available since C++20 if and only
