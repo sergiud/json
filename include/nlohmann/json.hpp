@@ -1825,7 +1825,12 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             !detail::is_basic_json<
                 typename std::decay<ValueType>::type>::value &&
                 detail::has_from_json<
-                    basic_json_t, typename std::decay<ValueType>::type>::value,
+                    basic_json_t,
+                    typename std::decay<ValueType>::type>::value &&
+                std::is_assignable< // Reject prvalue
+                    ValueType,
+                    typename std::add_lvalue_reference<
+                        typename std::decay<ValueType>::type>::type>::value,
             int> = 0>
     auto get_to(ValueType&& v) const noexcept(noexcept(
         JSONSerializer<typename std::decay<ValueType>::type>::from_json(

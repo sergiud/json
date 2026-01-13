@@ -9,6 +9,7 @@
 #include "doctest_compatibility.h"
 
 #include <nlohmann/json.hpp>
+#include <type_traits>
 using nlohmann::json;
 #ifdef JSON_TEST_NO_GLOBAL_UDLS
     using namespace nlohmann::literals; // NOLINT(google-build-using-namespace)
@@ -1202,11 +1203,16 @@ TEST_CASE("deserialization")
         const json j(42);
         int value = 0;
         j.get_to(FooBar<int>(value));
+        static_assert(std::is_rvalue_reference<decltype(j.get_to(FooBar<int>(value)))>::value, "expecting an rvalue");
         FooBar<int> f(value);
         CHECK(value == 42);
         value = 0;
         FooBar<int>& g = j.get_to(f);
+        static_assert(std::is_lvalue_reference<decltype(j.get_to(f))>::value, "expecting an lvalue");
         CHECK(value == 42);
+
+        // TODO Ensure the following call is not possible:
+        // int aa = j.get_to(42);
     }
 }
 

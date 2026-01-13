@@ -2,13 +2,13 @@
 
 ```cpp
 template<typename ValueType>
-ValueType& get_to(ValueType& v) const noexcept(
-    noexcept(JSONSerializer<ValueType>::from_json(
+ValueType& get_to(ValueType&& v) const noexcept(
+    noexcept(JSONSerializer<typename std::decay<ValueType>::type>::from_json(
         std::declval<const basic_json_t&>(), v)));
 ```
 
 Explicit type conversion between the JSON value and a compatible value. The value is filled into the input parameter by
-calling the `json_serializer<ValueType>` `from_json()` method.
+calling the `json_serializer<typename std::decay<ValueType>::type>` `from_json()` method.
 
 The function is equivalent to executing
 ```cpp
@@ -20,6 +20,8 @@ This overload is chosen if:
 
 - `ValueType` is not `basic_json`,
 - `json_serializer<ValueType>` has a `from_json()` method of the form `void from_json(const basic_json&, ValueType&)`
+- In case ValueType is not an lvalue reference, the argument is not a literal,
+  i.e., it is assignable.
 
 ## Template parameters
 

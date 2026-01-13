@@ -70,7 +70,7 @@ namespace ns {
 ```
 
 That's all! When calling the `json` constructor with your type, your custom `to_json` method will be automatically called.
-Likewise, when calling `get<your_type>()` or `get_to(your_type&)`, the `from_json` method will be called.
+Likewise, when calling `get<your_type>()` or `get_to(your_type&&)`, the `from_json` method will be called.
 
 Some important things:
 
